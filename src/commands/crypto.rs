@@ -25,11 +25,8 @@ async fn md5(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = md5::Md5::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -46,11 +43,8 @@ async fn sha1(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = sha1::Sha1::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -67,11 +61,8 @@ async fn sha224(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = sha2::Sha224::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -88,11 +79,8 @@ async fn sha256(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = sha2::Sha256::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -109,11 +97,8 @@ async fn sha384(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = sha2::Sha384::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -130,11 +115,8 @@ async fn sha512(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = sha2::Sha512::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -151,11 +133,8 @@ async fn sha512_224(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = sha2::Sha512Trunc224::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -172,11 +151,8 @@ async fn sha512_256(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     let hash = sha2::Sha512Trunc256::digest(data.as_bytes());
-
     msg.reply(ctx, format!("{:x}", hash)).await?;
-
     Ok(())
 }
 
@@ -186,7 +162,6 @@ async fn sha512_256(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[min_args(1)]
 async fn hash(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let mut hasher = DefaultHasher::new();
-
     let data = {
         let mut str = String::new();
         for s in args.raw() {
@@ -195,11 +170,8 @@ async fn hash(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
         str.trim_end().to_owned()
     };
-
     data.hash(&mut hasher);
-
     msg.reply(ctx, format!("{:x}", hasher.finish())).await?;
-
     Ok(())
 }
 
@@ -209,7 +181,6 @@ async fn hash(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[min_args(3)]
 async fn chacha20_enc(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let collect_args = args.raw().collect::<Vec<_>>();
-
     let key: Key = match collect_args.get(0) {
         Some(&"rand") => Key::clone_from_slice(&rand::random::<[u8; 32]>()),
         Some(k) => {
@@ -223,7 +194,6 @@ async fn chacha20_enc(ctx: &Context, msg: &Message, args: Args) -> CommandResult
             return Err("key needs to be 32 bytes".into());
         }
     };
-
     let nonce: Nonce = match collect_args.get(1) {
         Some(&"rand") => Nonce::clone_from_slice(&rand::random::<[u8; 12]>()),
         Some(n) => {
@@ -235,7 +205,6 @@ async fn chacha20_enc(ctx: &Context, msg: &Message, args: Args) -> CommandResult
         }
         None => return Err("input a nonce".into()),
     };
-
     let mut data = {
         let mut str = String::new();
         for ca in collect_args[2..].iter() {
@@ -244,11 +213,8 @@ async fn chacha20_enc(ctx: &Context, msg: &Message, args: Args) -> CommandResult
         }
         str.trim_end().to_owned()
     };
-
     let mut cipher = ChaCha20::new(&key, &nonce);
-
     cipher.encrypt(unsafe { data.as_bytes_mut() });
-
     msg.channel_id
         .send_message(&ctx.http, |m| {
             m.embed(|e| {
@@ -258,7 +224,6 @@ async fn chacha20_enc(ctx: &Context, msg: &Message, args: Args) -> CommandResult
             })
         })
         .await?;
-
     Ok(())
 }
 
@@ -268,7 +233,6 @@ async fn chacha20_enc(ctx: &Context, msg: &Message, args: Args) -> CommandResult
 #[min_args(3)]
 async fn chacha20_dec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let collect_args = args.raw().collect::<Vec<_>>();
-
     let key: Key = match collect_args.get(0) {
         Some(k) => {
             let hex_key = match decode(k) {
@@ -283,7 +247,6 @@ async fn chacha20_dec(ctx: &Context, msg: &Message, args: Args) -> CommandResult
         }
         None => return Err("input a key".into()),
     };
-
     let nonce: Nonce = match collect_args.get(1) {
         Some(n) => {
             let hex_nonce = match decode(n) {
@@ -298,7 +261,6 @@ async fn chacha20_dec(ctx: &Context, msg: &Message, args: Args) -> CommandResult
         }
         None => return Err("input a nonce".into()),
     };
-
     let mut data = match collect_args.get(2) {
         Some(d) => match decode(d) {
             Ok(result) => result,
@@ -306,12 +268,8 @@ async fn chacha20_dec(ctx: &Context, msg: &Message, args: Args) -> CommandResult
         },
         None => return Err("input data".into()),
     };
-
     let mut cipher = ChaCha20::new(&key, &nonce);
-
     cipher.decrypt(&mut data);
-
     msg.reply(ctx, String::from_utf8(data)?).await?;
-
     Ok(())
 }

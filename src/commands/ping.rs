@@ -25,10 +25,8 @@ pub async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
             return Ok(());
         }
     };
-
     let manager = shard_manager.lock().await;
     let runners = manager.runners.lock().await;
-
     let runner = match runners.get(&ShardId(ctx.shard_id)) {
         Some(runner) => runner,
         None => {
@@ -38,8 +36,6 @@ pub async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
         }
     };
     let shard_latency = runner.latency.unwrap().as_millis();
-
     msg.reply(ctx, format!("pong! {}ms", shard_latency)).await?;
-
     Ok(())
 }

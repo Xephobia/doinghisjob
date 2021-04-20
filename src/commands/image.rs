@@ -7,6 +7,7 @@ use serenity::{
     model::prelude::*,
     prelude::*,
 };
+use tokio::task::spawn_blocking;
 
 #[command]
 #[description = "add JPEG compression artifacts"]
@@ -36,13 +37,14 @@ async fn jpeg(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn magick(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing = msg.channel_id.start_typing(&ctx.http)?;
     let imgs = {
         let mut v = Vec::with_capacity(msg.attachments.len());
         for a in msg.attachments.iter() {
             let i = image::load_from_memory(a.download().await?.as_slice())?;
             let (width, height) = i.dimensions();
-            let magick = DynamicImage::ImageRgba8(seamcarving::resize(&i, width / 2, height / 2));
+            let magick = DynamicImage::ImageRgba8(
+                spawn_blocking(move || seamcarving::resize(&i, width / 2, height / 2)).await?,
+            );
             let mut vf = Vec::with_capacity(magick.as_bytes().len());
             magick.write_to(&mut vf, ImageOutputFormat::Png)?;
             let b = AttachmentType::Bytes {
@@ -54,6 +56,5 @@ async fn magick(ctx: &Context, msg: &Message) -> CommandResult {
         v
     };
     msg.channel_id.send_files(&ctx.http, imgs, |m| m).await?;
-    typing.stop().unwrap();
     Ok(())
 }

@@ -3,8 +3,10 @@ pub mod help;
 mod image;
 mod ping;
 mod random;
+mod whatlang;
 
 use self::image::*;
+use self::whatlang::*;
 use crypto::*;
 use ping::*;
 use random::*;
@@ -26,7 +28,7 @@ use serenity::framework::standard::macros::group;
 struct Crypto;
 
 #[group]
-#[commands(latency)]
+#[commands(latency, detectlang)]
 struct Others;
 
 #[group]
