@@ -67,7 +67,8 @@ pub async fn dispatch_error_hook(ctx: &Context, msg: &Message, err: DispatchErro
 #[hook]
 pub async fn after_hook(ctx: &Context, msg: &Message, cmd_name: &str, error: CommandResult) {
     if let Err(why) = error {
-        msg.reply(ctx, format!("error in {} : {:?}", cmd_name, why))
-            .await;
+        msg.reply(ctx, format!("error in {} : ```{:#?}```", cmd_name, why))
+            .await
+            .unwrap();
     }
 }

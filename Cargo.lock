@@ -88,6 +88,7 @@ dependencies = [
  "image",
  "md-5",
  "rand 0.8.3",
+ "seamcarving",
  "serde_json",
  "serenity",
  "sha-1",
@@ -1098,6 +1099,16 @@ checksum = "e3042af939fca8c3453b7af0f1c66e533a15a86169e39de2657310ade8f98d3c"
 dependencies = [
  "ring",
  "untrusted",
+]
+
+[[package]]
+name = "seamcarving"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d771206da9a4653bbb89b8d7db06ea25eb515a919b7433d9c0d9a53b004dc31d"
+dependencies = [
+ "image",
+ "num-traits",
 ]
 
 [[package]]

@@ -1,29 +1,59 @@
+use std::borrow::Cow;
+
+use image::{DynamicImage, GenericImageView, ImageOutputFormat};
 use serenity::{
-  prelude::*,
-  model::prelude::*,
-  framework::standard::{macros::command, CommandResult},
+    framework::standard::{macros::command, CommandResult},
+    http::AttachmentType,
+    model::prelude::*,
+    prelude::*,
 };
-use std::path::Path;
 
 #[command]
 #[description = "add JPEG compression artifacts"]
 async fn jpeg(ctx: &Context, msg: &Message) -> CommandResult {
-  let img = match msg.attachments.get(0) {
-    Some(a) => a,
-    None => return Err("a".into()),
-  };
+    let typing = msg.channel_id.start_typing(&ctx.http)?;
+    let imgs = {
+        let mut v = Vec::with_capacity(msg.attachments.len());
+        for a in msg.attachments.iter() {
+            let i = image::load_from_memory(a.download().await?.as_slice())?;
+            // build Vec to store encoded jpeg
+            let mut store_vec = Vec::with_capacity(i.as_bytes().len());
+            // save to jpeg
+            i.write_to(&mut store_vec, ImageOutputFormat::Jpeg(10))?;
+            // construct AttachmentType::Bytes needed for sending files
+            let b = AttachmentType::Bytes {
+                data: Cow::from(store_vec),
+                filename: a.filename.clone(),
+            };
+            v.push(b)
+        }
+        v
+    };
+    msg.channel_id.send_files(&ctx.http, imgs, |m| m).await?;
+    typing.stop().unwrap();
+    Ok(())
+}
 
-  let image_downloaded = match img.download().await {
-    Ok(i) => i,
-    Err(why) => return Err(why.into()),
-  };
-
-  let image = match image::load_from_memory(image_downloaded.as_slice()) {
-    Ok(i) => i,
-    Err(why) => return Err(why.into()),
-  };
-
-  // TODO : add saving to jpeg with compression and upload to message
-
-  Ok(())
+#[command]
+async fn magick(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing = msg.channel_id.start_typing(&ctx.http)?;
+    let imgs = {
+        let mut v = Vec::with_capacity(msg.attachments.len());
+        for a in msg.attachments.iter() {
+            let i = image::load_from_memory(a.download().await?.as_slice())?;
+            let (width, height) = i.dimensions();
+            let magick = DynamicImage::ImageRgba8(seamcarving::resize(&i, width / 2, height / 2));
+            let mut vf = Vec::with_capacity(magick.as_bytes().len());
+            magick.write_to(&mut vf, ImageOutputFormat::Png)?;
+            let b = AttachmentType::Bytes {
+                data: Cow::from(vf),
+                filename: a.filename.clone(),
+            };
+            v.push(b);
+        }
+        v
+    };
+    msg.channel_id.send_files(&ctx.http, imgs, |m| m).await?;
+    typing.stop().unwrap();
+    Ok(())
 }

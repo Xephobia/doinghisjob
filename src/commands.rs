@@ -1,13 +1,13 @@
 mod crypto;
 pub mod help;
+mod image;
 mod ping;
 mod random;
-mod image;
 
+use self::image::*;
 use crypto::*;
 use ping::*;
 use random::*;
-use self::image::*;
 use serenity::framework::standard::macros::group;
 
 #[group]
@@ -35,5 +35,5 @@ struct Others;
 struct Random;
 
 #[group]
-#[commands(jpeg)]
+#[commands(jpeg, magick)]
 struct Image;
