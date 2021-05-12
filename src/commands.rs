@@ -1,4 +1,5 @@
 mod crypto;
+mod flt;
 pub mod help;
 mod image;
 mod ping;
@@ -8,6 +9,7 @@ mod whatlang;
 use self::image::*;
 use self::whatlang::*;
 use crypto::*;
+use flt::*;
 use ping::*;
 use random::*;
 use serenity::framework::standard::macros::group;
@@ -28,7 +30,7 @@ use serenity::framework::standard::macros::group;
 struct Crypto;
 
 #[group]
-#[commands(latency, detectlang)]
+#[commands(latency, detectlang, flt)]
 struct Others;
 
 #[group]
