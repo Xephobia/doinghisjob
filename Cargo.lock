@@ -95,26 +95,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
-name = "bruhes"
-version = "0.1.0"
-dependencies = [
- "chacha20",
- "hex",
- "image",
- "lingua",
- "md-5",
- "num 0.4.0",
- "rand 0.8.3",
- "seamcarving",
- "serde_json",
- "serenity",
- "sha-1",
- "sha2",
- "sha3",
- "tokio",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -303,6 +283,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "doinghisjob"
+version = "0.1.0"
+dependencies = [
+ "chacha20",
+ "hex",
+ "image",
+ "lingua",
+ "md-5",
+ "num 0.4.0",
+ "rand 0.8.3",
+ "seamcarving",
+ "serde_json",
+ "serenity",
+ "sha-1",
+ "sha2",
+ "sha3",
+ "tokio",
 ]
 
 [[package]]
