@@ -22,6 +22,6 @@ COPY --from=cargo-build /usr/src/app/target/x86_64-unknown-linux-musl/release/do
 RUN chown app:app doinghisjob
 USER app
 
-EXPOSE 9090
-
+EXPOSE 80/tcp
+EXPOSE 80/udp
 CMD ["./doinghisjob"]
