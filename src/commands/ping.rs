@@ -5,6 +5,7 @@ use serenity::{
     prelude::*,
 };
 use std::sync::Arc;
+use anyhow::anyhow;
 
 pub struct ShardManagerContainer;
 
@@ -19,21 +20,13 @@ pub async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
     let context_data = &ctx.data.read().await;
     let shard_manager = match context_data.get::<ShardManagerContainer>() {
         Some(shrd_manage) => shrd_manage,
-        None => {
-            msg.reply(ctx, "error in ^ping | failed to get shard manager")
-                .await?;
-            return Ok(());
-        }
+        None => return Err(anyhow!("error in ^ping | failed to get shard manager").into())
     };
     let manager = shard_manager.lock().await;
     let runners = manager.runners.lock().await;
     let runner = match runners.get(&ShardId(ctx.shard_id)) {
         Some(runner) => runner,
-        None => {
-            msg.reply(ctx, "error in ^ping | failed to get shard")
-                .await?;
-            return Ok(());
-        }
+        None => return Err(anyhow!("error in ^ping | failed to get shard").into())
     };
     let shard_latency = runner.latency.unwrap().as_millis();
     msg.reply(ctx, format!("pong! {}ms", shard_latency)).await?;
