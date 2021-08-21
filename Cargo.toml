@@ -3,6 +3,11 @@ name = "doinghisjob"
 version = "0.1.0"
 authors = ["Xephobia <nathanvalletmarseille@gmail.com>"]
 edition = "2018"
+description = "multi purpose bot written in rust"
+license = "unlicense"
+license-file = "LICENSE"
+repository = "https://github.com/Xephobia/doinghisjob"
+keywords = ["bot", "discord", "async"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
