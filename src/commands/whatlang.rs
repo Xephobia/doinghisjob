@@ -13,7 +13,7 @@ use tokio::task::spawn_blocking;
 pub async fn detectlang(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let txt: String = args
         .iter::<String>()
-        .map(|s| s.unwrap())
+        .map(Result::unwrap)
         .collect::<Vec<String>>()
         .join(" ");
     // await the operation to try to reduce blocking

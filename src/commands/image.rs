@@ -26,7 +26,7 @@ async fn jpeg(ctx: &Context, msg: &Message) -> CommandResult {
                 data: Cow::from(store_vec),
                 filename: a.filename.clone(),
             };
-            v.push(b)
+            v.push(b);
         }
         v
     };
@@ -39,7 +39,7 @@ async fn jpeg(ctx: &Context, msg: &Message) -> CommandResult {
 async fn magick(ctx: &Context, msg: &Message) -> CommandResult {
     let imgs = {
         let mut v = Vec::with_capacity(msg.attachments.len());
-        for a in msg.attachments.iter() {
+        for a in &msg.attachments {
             let i = image::load_from_memory(a.download().await?.as_slice())?;
             let (width, height) = i.dimensions();
             let magick = DynamicImage::ImageRgba8(

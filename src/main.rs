@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic)]
+
 use serenity::{
     client::bridge::gateway::ShardManager, framework::StandardFramework, http::Http, prelude::*,
 };
