@@ -7,97 +7,66 @@ use clap::{
     AppSettings::{ColorNever, NoBinaryName},
     Arg,
 };
-use md5::Digest;
+use md5::{Digest, Md5};
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::prelude::*,
     prelude::*,
 };
+use sha1::Sha1;
+use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512Trunc224, Sha512Trunc256};
 
 enum Format {
     Hex,
     Base64,
 }
 
-async fn md5(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = md5::Md5::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
+macro_rules! arg_data {
+    () => {
+        Arg::with_name("data")
+            .short("d")
+            .required(true)
+            .takes_value(true)
     };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
 }
 
-async fn sha1(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = sha1::Sha1::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
+macro_rules! arg_format {
+    () => {
+        Arg::with_name("format")
+            .short("f")
+            .default_value("base64")
+            .possible_values(&["hex", "base64"])
     };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
 }
 
-async fn sha224(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = sha2::Sha224::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
-    };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
+macro_rules! gen_hash_funcs {
+    [ $($f:ident = $fhash:ident ), *] => {
+        $(
+            async fn $f(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
+            let hash = $fhash::digest(data.as_bytes());
+            let encoded = match format {
+                Format::Hex => hex::encode(hash),
+                Format::Base64 => base64::encode(hash),
+            };
+            msg.reply(ctx, encoded).await?;
+            Ok(())
+        } )*
+        fn hash_subcmds<'a, 'b>() -> Vec<App<'a, 'b>> {
+                    vec![$(App::new(stringify!($f)).args(&[arg_data!(), arg_format!()]),)*]
+        }
+    }
 }
 
-async fn sha256(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = sha2::Sha256::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
-    };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
-}
-
-async fn sha384(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = sha2::Sha384::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
-    };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
-}
-
-async fn sha512(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = sha2::Sha512::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
-    };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
-}
-
-async fn sha512_224(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = sha2::Sha512Trunc224::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
-    };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
-}
-
-async fn sha512_256(ctx: &Context, msg: &Message, format: Format, data: &str) -> CommandResult {
-    let hash = sha2::Sha512Trunc256::digest(data.as_bytes());
-    let encoded = match format {
-        Format::Hex => hex::encode(hash),
-        Format::Base64 => base64::encode(hash),
-    };
-    msg.reply(ctx, encoded).await?;
-    Ok(())
-}
+gen_hash_funcs![
+    md5 = Md5,
+    sha1 = Sha1,
+    sha224 = Sha224,
+    sha256 = Sha256,
+    sha384 = Sha384,
+    sha512 = Sha512,
+    sha512_224 = Sha512Trunc224,
+    sha512_256 = Sha512Trunc256
+];
 
 #[command]
 #[description = "hash data with algorithm"]
@@ -105,187 +74,27 @@ async fn hash(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let matches = {
         let app = App::new("hash")
             .settings(&[NoBinaryName, ColorNever])
-            .subcommands([
-                App::new("md5")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-                App::new("sha1")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-                App::new("sha224")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-                App::new("sha256")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-                App::new("sha384")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-                App::new("sha512")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-                App::new("sha512_224")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-                App::new("sha512_256")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-            ]);
+            .subcommands(hash_subcmds());
         app.get_matches_from_safe(args.raw_quoted())?
     };
 
-    if let Some(m) = matches.subcommand_matches("md5") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
-        };
+    macro_rules! hash_subcmd_match {
+        [$x:ident, $($h:ident),*] => {
+            $(
+                if let Some(m) = $x.subcommand_matches(stringify!($h)) {
+                    let format = match m.value_of("format") {
+                        Some("hex") => Format::Hex,
+                        _ => Format::Base64,
+                    };
 
-        md5(ctx, msg, format, m.value_of("data").unwrap()).await?;
-    }
-    if let Some(m) = matches.subcommand_matches("sha1") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
+                    $h(ctx, msg, format, m.value_of("data").unwrap()).await?;
+                }
+            )*
         };
-
-        sha1(ctx, msg, format, m.value_of("data").unwrap()).await?;
     }
-    if let Some(m) = matches.subcommand_matches("sha224") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
-        };
 
-        sha224(ctx, msg, format, m.value_of("data").unwrap()).await?;
-    }
-    if let Some(m) = matches.subcommand_matches("sha256") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
-        };
+    hash_subcmd_match![matches, md5, sha1, sha224, sha256, sha384, sha512, sha512_224, sha512_256];
 
-        sha256(ctx, msg, format, m.value_of("data").unwrap()).await?;
-    }
-    if let Some(m) = matches.subcommand_matches("sha384") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
-        };
-
-        sha384(ctx, msg, format, m.value_of("data").unwrap()).await?;
-    }
-    if let Some(m) = matches.subcommand_matches("sha512") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
-        };
-
-        sha512(ctx, msg, format, m.value_of("data").unwrap()).await?;
-    }
-    if let Some(m) = matches.subcommand_matches("sha512_224") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
-        };
-
-        sha512_224(ctx, msg, format, m.value_of("data").unwrap()).await?;
-    }
-    if let Some(m) = matches.subcommand_matches("sha512_256") {
-        let format = match m.value_of("format") {
-            Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
-        };
-
-        sha512_256(ctx, msg, format, m.value_of("data").unwrap()).await?;
-    }
     Ok(())
 }
 
@@ -295,23 +104,12 @@ async fn encrypt(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let matches = {
         let app = App::new("encrypt")
             .settings(&[NoBinaryName, ColorNever])
-            .subcommand(
-                App::new("chacha20")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(Arg::with_name("key").short("k").takes_value(true))
-                    .arg(Arg::with_name("nonce").short("n").takes_value(true))
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-            );
+            .subcommand(App::new("chacha20").args(&[
+                arg_data!(),
+                Arg::with_name("key").short("k").takes_value(true),
+                Arg::with_name("nonce").short("n").takes_value(true),
+                arg_format!(),
+            ]));
 
         app.get_matches_from_safe(args.raw_quoted())?
     };
@@ -319,8 +117,7 @@ async fn encrypt(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     if let Some(m) = matches.subcommand_matches("chacha20") {
         let format = match m.value_of("format") {
             Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
+            _ => Format::Base64,
         };
 
         chacha20_enc(
@@ -343,33 +140,12 @@ async fn decrypt(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let matches = {
         let app = App::new("decrypt")
             .settings(&[NoBinaryName, ColorNever])
-            .subcommand(
-                App::new("chacha20")
-                    .arg(
-                        Arg::with_name("data")
-                            .short("d")
-                            .required(true)
-                            .takes_value(true),
-                    )
-                    .arg(
-                        Arg::with_name("key")
-                            .short("k")
-                            .takes_value(true)
-                            .required(true),
-                    )
-                    .arg(
-                        Arg::with_name("nonce")
-                            .short("n")
-                            .takes_value(true)
-                            .required(true),
-                    )
-                    .arg(
-                        Arg::with_name("format")
-                            .short("f")
-                            .default_value("base64")
-                            .possible_values(&["hex", "base64"]),
-                    ),
-            );
+            .subcommand(App::new("chacha20").args(&[
+                arg_data!(),
+                Arg::with_name("key").short("k").takes_value(true),
+                Arg::with_name("nonce").short("n").takes_value(true),
+                arg_format!(),
+            ]));
 
         app.get_matches_from_safe(args.raw_quoted())?
     };
@@ -377,8 +153,7 @@ async fn decrypt(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     if let Some(m) = matches.subcommand_matches("chacha20") {
         let format = match m.value_of("format") {
             Some("hex") => Format::Hex,
-            Some("base64") => Format::Base64,
-            _ => Format::Base64, // normally unreachable
+            _ => Format::Base64,
         };
         chacha20_dec(
             ctx,

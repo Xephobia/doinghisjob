@@ -15,9 +15,7 @@ use random::*;
 use serenity::framework::standard::macros::group;
 
 #[group]
-#[commands(
-    hash, encrypt, decrypt
-)]
+#[commands(hash, encrypt, decrypt)]
 struct Crypto;
 
 #[group]
