@@ -16,16 +16,7 @@ use serenity::framework::standard::macros::group;
 
 #[group]
 #[commands(
-    md5,
-    sha1,
-    sha224,
-    sha256,
-    sha384,
-    sha512,
-    sha512_224,
-    sha512_256,
-    chacha20_enc,
-    chacha20_dec
+    md5, sha1, sha224, sha256, sha384, sha512, sha512_224, sha512_256, encrypt, decrypt
 )]
 struct Crypto;
 
