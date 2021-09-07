@@ -6,19 +6,21 @@ use serenity::{
 };
 
 macro_rules! gen_random_funs {
-    [$($x:ty),*] => {
-        paste! {
+    ($($x:ty),*) => {
         $(
-            #[command]
-            #[aliases($x)]
-            #[description = "generates a random `" $x "`"]
-            async fn [<_ $x>](ctx: &Context, msg: &Message) -> CommandResult {
-                msg.reply(ctx, rand::random::<$x>()).await?;
-                Ok(())
-            }
-
+            paste!(gen_random_funs! {
+                #[command = "" $x]
+                #[description = "generates a random "$x""]
+                async fn [<_ $x>](ctx: &Context, msg: &Message) -> CommandResult {
+                    msg.reply(ctx, rand::random::<$x>()).await?;
+                    Ok(())
+                }
+            });
         )*
-    }
+    };
+    (#[command = $command:literal] $fn:item) => {
+        #[command($command)]
+        $fn
     };
 }
 

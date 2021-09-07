@@ -15,7 +15,7 @@ async fn jpeg(ctx: &Context, msg: &Message) -> CommandResult {
     let typing = msg.channel_id.start_typing(&ctx.http)?;
     let imgs = {
         let mut v = Vec::with_capacity(msg.attachments.len());
-        for a in msg.attachments.iter() {
+        for a in &msg.attachments {
             let i = image::load_from_memory(a.download().await?.as_slice())?;
             // build Vec to store encoded jpeg
             let mut store_vec = Vec::with_capacity(i.as_bytes().len());

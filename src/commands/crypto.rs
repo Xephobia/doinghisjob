@@ -1,5 +1,5 @@
 use chacha20::{
-    cipher::{NewStreamCipher, StreamCipher},
+    cipher::{NewCipher, StreamCipher},
     ChaCha20, Key, Nonce,
 };
 use clap::{
@@ -224,7 +224,7 @@ async fn chacha20_enc(
         }
     };
     let mut cipher = ChaCha20::new(&key, &nonce);
-    cipher.encrypt(&mut data);
+    cipher.apply_keystream(&mut data);
     let data_encoded = match format {
         Format::Hex => hex::encode(data),
         Format::Base64 => base64::encode(data),
@@ -281,7 +281,7 @@ async fn chacha20_dec(
         &Key::clone_from_slice(&key),
         &Nonce::clone_from_slice(&nonce),
     );
-    cipher.decrypt(&mut data);
+    cipher.apply_keystream(&mut data);
     msg.reply(ctx, String::from_utf8(data)?).await?;
     Ok(())
 }

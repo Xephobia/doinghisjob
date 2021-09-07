@@ -26,7 +26,7 @@ pub async fn detectlang(ctx: &Context, msg: &Message, mut args: Args) -> Command
                 for l in detected_langs {
                     e.field(
                         format!("{:?}", l.0),
-                        format!("accuracy : {}%", l.1 * 100f64),
+                        format!("accuracy : {}%", l.1 * 100_f64),
                         true,
                     );
                 }
