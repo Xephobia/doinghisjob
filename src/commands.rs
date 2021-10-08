@@ -2,6 +2,7 @@ mod crypto;
 mod flt;
 pub mod help;
 mod image;
+mod moderation;
 mod ping;
 mod random;
 mod whatlang;
@@ -10,6 +11,7 @@ use self::image::*;
 use self::whatlang::*;
 use crypto::*;
 use flt::*;
+use moderation::*;
 use ping::*;
 use random::*;
 use serenity::framework::standard::macros::group;
@@ -30,3 +32,7 @@ struct Random;
 #[group]
 #[commands(jpeg, magick)]
 struct Image;
+
+#[group]
+#[commands(kick)]
+struct Moderation;
